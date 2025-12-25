@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Particle Sandbox</title>
+    <meta name="description" content="People Playground-style particle sandbox game" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23111'/%3E%3Ccircle cx='50' cy='50' r='40' fill='%2300ff88'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <!-- Game Title Bar -->
+    <header class="title-bar">
+      <div class="logo">
+        <span class="logo-icon">⚛</span>
+        <div class="logo-text">
+          <h1>PARTICLE SANDBOX</h1>
+          <span class="tagline">People Playground Style</span>
+        </div>
+      </div>
+      <div class="title-controls">
+        <button id="playPause" class="control-btn play-btn" title="Play/Pause">
+          <span class="btn-icon">▶</span>
+          <span class="btn-label">PAUSE</span>
+        </button>
+        <button id="step" class="control-btn" title="Step one frame">
+          <span class="btn-icon">⏭</span>
+        </button>
+        <button id="clear" class="control-btn danger-btn" title="Clear world">
+          <span class="btn-icon">🗑</span>
+        </button>
+        <button id="save" class="control-btn" title="Save PNG">
+          <span class="btn-icon">📷</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Toolbar -->
+    <nav class="toolbar">
+      <!-- Materials Section -->
+      <div class="tool-section">
+        <div class="section-header">
+          <span class="section-icon">🧱</span>
+          <span class="section-title">SOLIDS</span>
+        </div>
+        <div class="material-grid">
+          <button class="material-btn" data-material="stone" title="Stone - Immovable">
+            <span class="mat-swatch" style="--mat-color: #6e737b"></span>
+            <span class="mat-name">Stone</span>
+          </button>
+          <button class="material-btn" data-material="concrete" title="Concrete - Strong & solid">
+            <span class="mat-swatch" style="--mat-color: #8a8a8a"></span>
+            <span class="mat-name">Concrete</span>
+          </button>
+          <button class="material-btn" data-material="wood" title="Wood - Flammable!">
+            <span class="mat-swatch" style="--mat-color: #8b5a2b"></span>
+            <span class="mat-name">Wood</span>
+          </button>
+          <button class="material-btn" data-material="glass" title="Glass - Transparent">
+            <span class="mat-swatch glass-swatch" style="--mat-color: #a8d8ff"></span>
+            <span class="mat-name">Glass</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="tool-section">
+        <div class="section-header">
+          <span class="section-icon">💧</span>
+          <span class="section-title">FLUIDS</span>
+        </div>
+        <div class="material-grid">
+          <button class="material-btn" data-material="sand" title="Sand - Falls & piles">
+            <span class="mat-swatch" style="--mat-color: #e3c078"></span>
+            <span class="mat-name">Sand</span>
+          </button>
+          <button class="material-btn" data-material="water" title="Water - Flows & puts out fire">
+            <span class="mat-swatch water-swatch" style="--mat-color: #4a9eff"></span>
+            <span class="mat-name">Water</span>
+          </button>
+          <button class="material-btn" data-material="oil" title="Oil - Flammable liquid">
+            <span class="mat-swatch" style="--mat-color: #3a3520"></span>
+            <span class="mat-name">Oil</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="tool-section danger-section">
+        <div class="section-header">
+          <span class="section-icon">🔥</span>
+          <span class="section-title">HAZARDS</span>
+        </div>
+        <div class="material-grid">
+          <button class="material-btn fire-btn" data-material="fire" title="Fire - Burns things!">
+            <span class="mat-swatch fire-swatch" style="--mat-color: #ff6a00"></span>
+            <span class="mat-name">Fire</span>
+          </button>
+          <button class="material-btn lava-btn" data-material="lava" title="Lava - Super hot!">
+            <span class="mat-swatch lava-swatch" style="--mat-color: #ff3c14"></span>
+            <span class="mat-name">Lava</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="tool-section bomb-section">
+        <div class="section-header">
+          <span class="section-icon">💥</span>
+          <span class="section-title">EXPLOSIVES</span>
+        </div>
+        <button id="spawnBomb" class="bomb-btn" title="Click to place a bomb with 2 second fuse!">
+          <span class="bomb-icon">💣</span>
+          <span class="bomb-text">BOMB</span>
+          <span class="bomb-hint">2 sec fuse</span>
+        </button>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Tools Section -->
+      <div class="tool-section">
+        <div class="section-header">
+          <span class="section-icon">🛠</span>
+          <span class="section-title">TOOLS</span>
+        </div>
+        <div class="tool-grid">
+          <button class="tool-btn eraser" data-material="erase" title="Eraser">
+            <span class="tool-icon">🧹</span>
+            <span class="tool-name">Erase</span>
+          </button>
+          <button id="rain" class="tool-btn rain-btn" title="Toggle Rain">
+            <span class="tool-icon">🌧</span>
+            <span class="tool-name">Rain</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- People Playground Section -->
+      <div class="tool-section people-section">
+        <div class="section-header">
+          <span class="section-icon">🎮</span>
+          <span class="section-title">PEOPLE PLAYGROUND</span>
+        </div>
+        <button id="spawnPerson" class="spawn-btn" title="Click to spawn a person!">
+          <span class="spawn-icon">🧍</span>
+          <span class="spawn-text">SPAWN PERSON</span>
+          <span class="spawn-hint">Click canvas after selecting</span>
+        </button>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Brush Size -->
+      <div class="tool-section brush-section">
+        <div class="section-header">
+          <span class="section-icon">🖌</span>
+          <span class="section-title">BRUSH</span>
+        </div>
+        <div class="brush-control">
+          <input id="brushSize" type="range" min="1" max="40" step="1" value="8" />
+          <div class="brush-preview">
+            <div class="brush-circle" id="brushPreview"></div>
+            <span id="brushSizeValue">8</span>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Game Canvas -->
+    <main class="game-stage">
+      <div class="canvas-frame">
+        <canvas id="display" aria-label="Particle Sandbox" role="img"></canvas>
+        <div class="canvas-overlay" id="canvasOverlay">
+          <span class="overlay-text">Click anywhere to spawn a person</span>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="game-footer">
+      <div class="footer-left">
+        <span class="key-hint">P</span> Person
+        <span class="key-hint">B</span> Bomb
+        <span class="key-hint">Space</span> Pause
+      </div>
+      <div class="footer-center">
+        Made for fun • People Playground style sandbox
+      </div>
+      <div class="footer-right">
+        <span class="fps-counter" id="fpsCounter">60 FPS</span>
+      </div>
+    </footer>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
