@@ -438,48 +438,163 @@ export function createRenderer(canvas, simWidth, simHeight, dpr) {
       const x = gib.x * scaleX;
       const y = gib.y * scaleY;
       const alpha = Math.min(1, gib.life / 60);
-      
+
       ctx.save();
       ctx.translate(x, y);
       ctx.rotate(gib.rotation);
-      
-      const [r, g, b] = gib.color;
-      ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
-      
-      // Draw different shapes based on gib type
+
+      // Draw different detailed body parts based on gib type
       switch (gib.type) {
         case 'head':
-          // Circular head
+          // Detailed severed head with face and hair
+          ctx.fillStyle = `rgba(${gib.color[0]}, ${gib.color[1]}, ${gib.color[2]}, ${alpha})`;
+
+          // Main head shape (more oval than circle)
           ctx.beginPath();
-          ctx.arc(0, 0, 4 * scaleX, 0, Math.PI * 2);
+          ctx.ellipse(0, 0, 4.5 * scaleX, 5 * scaleY, 0, 0, Math.PI * 2);
           ctx.fill();
-          // Hair
-          ctx.fillStyle = `rgba(50, 30, 0, ${alpha})`;
-          ctx.fillRect(-3 * scaleX, -5 * scaleX, 6 * scaleX, 3 * scaleY);
+
+          // Hair on top
+          ctx.fillStyle = `rgba(30, 20, 10, ${alpha})`;
+          ctx.beginPath();
+          ctx.ellipse(0, -4 * scaleY, 4 * scaleX, 2.5 * scaleY, 0, Math.PI, Math.PI * 2);
+          ctx.fill();
+
+          // Eyes (black holes)
+          ctx.fillStyle = `rgba(0, 0, 0, ${alpha})`;
+          ctx.beginPath();
+          ctx.ellipse(-1.5 * scaleX, -0.5 * scaleY, 0.8 * scaleX, 0.6 * scaleY, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.ellipse(1.5 * scaleX, -0.5 * scaleY, 0.8 * scaleX, 0.6 * scaleY, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Mouth (open in horror)
+          ctx.strokeStyle = `rgba(0, 0, 0, ${alpha})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(0, 1 * scaleY, 1.5 * scaleX, 0, Math.PI);
+          ctx.stroke();
+
           break;
-          
+
         case 'torso':
-          // Rectangular torso
-          ctx.fillRect(-4 * scaleX, -5 * scaleY, 8 * scaleX, 10 * scaleY);
+          // Bloody torso with ribs showing
+          ctx.fillStyle = `rgba(${gib.color[0]}, ${gib.color[1]}, ${gib.color[2]}, ${alpha})`;
+
+          // Main torso shape
+          ctx.beginPath();
+          ctx.ellipse(0, 0, 5 * scaleX, 6 * scaleY, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Ribcage outline
+          ctx.strokeStyle = `rgba(200, 200, 200, ${alpha * 0.8})`;
+          ctx.lineWidth = 1;
+          for (let i = 0; i < 3; i++) {
+            ctx.beginPath();
+            ctx.ellipse(0, (-2 + i) * scaleY, 3.5 * scaleX, 2 * scaleY, 0, 0, Math.PI);
+            ctx.stroke();
+          }
+
+          // Intestines hanging out (gory detail)
+          ctx.fillStyle = `rgba(150, 100, 50, ${alpha})`;
+          ctx.beginPath();
+          ctx.ellipse(2 * scaleX, 2 * scaleY, 2 * scaleX, 1.5 * scaleY, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Bloody chunks
+          ctx.fillStyle = `rgba(120, 0, 0, ${alpha * 0.7})`;
+          for (let i = 0; i < 3; i++) {
+            const angle = (i * Math.PI * 2) / 3;
+            const dist = 3 * scaleX;
+            ctx.beginPath();
+            ctx.arc(Math.cos(angle) * dist, Math.sin(angle) * dist, 1.5 * scaleX, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
           break;
-          
+
         case 'arm':
-          // Arm segment
-          ctx.fillRect(-2 * scaleX, -4 * scaleY, 4 * scaleX, 8 * scaleY);
+          // Severed arm with bone protruding
+          ctx.fillStyle = `rgba(${gib.color[0]}, ${gib.color[1]}, ${gib.color[2]}, ${alpha})`;
+
+          // Arm flesh
+          ctx.beginPath();
+          ctx.ellipse(0, 0, 2.5 * scaleX, 6 * scaleY, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Bone sticking out (white)
+          ctx.fillStyle = `rgba(240, 240, 240, ${alpha})`;
+          ctx.fillRect(-0.5 * scaleX, -6 * scaleY, 1 * scaleX, 3 * scaleY);
+
+          // Bloody stump
+          ctx.fillStyle = `rgba(120, 0, 0, ${alpha * 0.8})`;
+          ctx.beginPath();
+          ctx.ellipse(0, 5 * scaleY, 2 * scaleX, 1.5 * scaleY, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Hand at the end
+          ctx.fillStyle = `rgba(${gib.color[0] - 20}, ${gib.color[1] - 20}, ${gib.color[2] - 20}, ${alpha})`;
+          ctx.beginPath();
+          ctx.ellipse(0, -6 * scaleY, 1.8 * scaleX, 2 * scaleY, 0, 0, Math.PI * 2);
+          ctx.fill();
+
           break;
-          
+
         case 'leg':
-          // Leg segment
-          ctx.fillRect(-2 * scaleX, -5 * scaleY, 4 * scaleX, 10 * scaleY);
+          // Severed leg with bone and muscle
+          ctx.fillStyle = `rgba(${gib.color[0]}, ${gib.color[1]}, ${gib.color[2]}, ${alpha})`;
+
+          // Leg flesh
+          ctx.beginPath();
+          ctx.ellipse(0, 0, 3 * scaleX, 7 * scaleY, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Muscle definition
+          ctx.fillStyle = `rgba(${gib.color[0] - 30}, ${gib.color[1] - 30}, ${gib.color[2] - 30}, ${alpha * 0.6})`;
+          ctx.beginPath();
+          ctx.ellipse(-1 * scaleX, -2 * scaleY, 1.5 * scaleX, 4 * scaleY, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Bone fragments
+          ctx.fillStyle = `rgba(240, 240, 240, ${alpha})`;
+          ctx.fillRect(-0.3 * scaleX, -7 * scaleY, 0.6 * scaleX, 4 * scaleY);
+
+          // Bloody foot
+          ctx.fillStyle = `rgba(${gib.color[0] - 20}, ${gib.color[1] - 20}, ${gib.color[2] - 20}, ${alpha})`;
+          ctx.beginPath();
+          ctx.ellipse(0, 6 * scaleY, 2.5 * scaleX, 2 * scaleY, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Blood pooling
+          ctx.fillStyle = `rgba(120, 0, 0, ${alpha * 0.5})`;
+          ctx.beginPath();
+          ctx.ellipse(0, 7 * scaleY, 3 * scaleX, 1 * scaleY, 0, 0, Math.PI * 2);
+          ctx.fill();
+
           break;
       }
-      
-      // Blood stain on gib
-      ctx.fillStyle = `rgba(120, 0, 0, ${alpha * 0.7})`;
+
+      // Enhanced blood and gore effects
+      ctx.fillStyle = `rgba(120, 0, 0, ${alpha * 0.8})`;
+      // Blood splatters around the gib
+      for (let i = 0; i < 5; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = Math.random() * 8 * scaleX;
+        const size = (0.5 + Math.random()) * scaleX;
+        ctx.beginPath();
+        ctx.arc(Math.cos(angle) * dist, Math.sin(angle) * dist, size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Dripping blood effect
+      ctx.strokeStyle = `rgba(120, 0, 0, ${alpha * 0.6})`;
+      ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.arc(0, 0, 2 * scaleX, 0, Math.PI * 2);
-      ctx.fill();
-      
+      ctx.moveTo(0, 0);
+      ctx.lineTo(0, 15 * scaleY);
+      ctx.stroke();
+
       ctx.restore();
     }
   }

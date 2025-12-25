@@ -891,8 +891,8 @@ export function createWorld(width, height) {
 
         // If acid is touching a body part (within 1.5 units)
         if (dist < 1.5) {
-          // Deal acid damage over time
-          person.health -= 0.5; // Gradual damage, not instant
+          // Deal acid damage over time - much slower now!
+          person.health -= 0.02; // Very gradual damage
           person.damageFlash = 8; // Visual damage effect
 
           // Chance to lose limbs from acid corrosion!
