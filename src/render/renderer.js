@@ -36,6 +36,9 @@ export function createRenderer(canvas, simWidth, simHeight, dpr) {
       drawRagdollPerson(person, width, height, pixels);
     }
 
+    // Draw gibs in pixel buffer (same style as people!)
+    drawGibsPixelStyle(world.gibs, width, height, pixels);
+
     // Put image at 1:1 pixel into an offscreen, then scale to canvas size
     const off = ensureOffscreen(width, height);
     off.ctx.putImageData(imageData, 0, 0);
@@ -52,7 +55,7 @@ export function createRenderer(canvas, simWidth, simHeight, dpr) {
     drawBombs(ctx, world.bombs, scaleX, scaleY);
     drawExplosions(ctx, world.explosions, scaleX, scaleY);
     drawBloodParticles(ctx, world.bloodParticles, scaleX, scaleY);
-    drawGibs(ctx, world.gibs, scaleX, scaleY);
+    // Gibs are now drawn in pixel buffer above, not here
     drawWeapons(ctx, world.getWeapons(), scaleX, scaleY);
     drawProjectiles(ctx, world.getProjectiles(), scaleX, scaleY);
     drawVehicles(ctx, world.getVehicles(), scaleX, scaleY);
@@ -237,6 +240,107 @@ export function createRenderer(canvas, simWidth, simHeight, dpr) {
     }
   }
   
+  // Draw gibs in pixel buffer style (matching the living humans)
+  function drawGibsPixelStyle(gibs, width, height, pixels) {
+    for (const gib of gibs) {
+      const x = Math.floor(gib.x);
+      const y = Math.floor(gib.y);
+      const alpha = Math.min(1, gib.life / 60);
+
+      // Skip nearly invisible gibs
+      if (alpha < 0.1) continue;
+
+      // Get base colors from gib
+      let r = gib.color[0];
+      let g = gib.color[1];
+      let b = gib.color[2];
+
+      // Fade colors based on life
+      r = Math.floor(r * alpha);
+      g = Math.floor(g * alpha);
+      b = Math.floor(b * alpha);
+
+      // Blood color (dark red)
+      const bloodR = Math.floor(120 * alpha);
+      const bloodG = Math.floor(0 * alpha);
+      const bloodB = Math.floor(0 * alpha);
+
+      switch (gib.type) {
+        case 'head':
+          // Draw head circle (matches living human head)
+          drawCircle(pixels, width, height, x, y, 4, r, g, b);
+          // Hair on top
+          for (let dx = -2; dx <= 2; dx++) {
+            setPixel(pixels, width, height, x + dx, y - 4, 60, 40, 30);
+            setPixel(pixels, width, height, x + dx, y - 3, 60, 40, 30);
+          }
+          // Dead X eyes
+          setPixel(pixels, width, height, x - 2, y - 2, 80, 20, 20);
+          setPixel(pixels, width, height, x - 2, y, 80, 20, 20);
+          setPixel(pixels, width, height, x - 1, y - 1, 80, 20, 20);
+          setPixel(pixels, width, height, x + 2, y - 2, 80, 20, 20);
+          setPixel(pixels, width, height, x + 2, y, 80, 20, 20);
+          setPixel(pixels, width, height, x + 1, y - 1, 80, 20, 20);
+          // Neck stump (bloody)
+          drawCircle(pixels, width, height, x, y + 4, 2, bloodR, bloodG, bloodB);
+          break;
+
+        case 'torso':
+          // Blue shirt torso (matches living human)
+          const shirtR = Math.floor(65 * alpha);
+          const shirtG = Math.floor(105 * alpha);
+          const shirtB = Math.floor(180 * alpha);
+          drawThickLine(pixels, width, height, x, y - 5, x, y + 5, shirtR, shirtG, shirtB, 3);
+          // Shoulder line
+          drawThickLine(pixels, width, height, x - 4, y - 4, x + 4, y - 4, shirtR, shirtG, shirtB, 2);
+          // Hip line (pants color)
+          const pantsR = Math.floor(50 * alpha);
+          const pantsG = Math.floor(60 * alpha);
+          const pantsB = Math.floor(120 * alpha);
+          drawThickLine(pixels, width, height, x - 3, y + 5, x + 3, y + 5, pantsR, pantsG, pantsB, 2);
+          // Bloody ends
+          drawCircle(pixels, width, height, x, y - 5, 1, bloodR, bloodG, bloodB);
+          drawCircle(pixels, width, height, x, y + 5, 1, bloodR, bloodG, bloodB);
+          break;
+
+        case 'arm':
+          // Skin colored arm segment
+          drawThickLine(pixels, width, height, x, y - 4, x, y + 4, r, g, b, 2);
+          // Elbow joint
+          drawCircle(pixels, width, height, x, y, 1, Math.floor(r * 0.8), Math.floor(g * 0.8), Math.floor(b * 0.8));
+          // Hand at one end
+          drawCircle(pixels, width, height, x, y - 4, 2, r, g, b);
+          // Bloody stump at other end
+          drawCircle(pixels, width, height, x, y + 4, 2, bloodR, bloodG, bloodB);
+          break;
+
+        case 'leg':
+          // Pants colored leg segment
+          const legPantsR = Math.floor(50 * alpha);
+          const legPantsG = Math.floor(60 * alpha);
+          const legPantsB = Math.floor(120 * alpha);
+          drawThickLine(pixels, width, height, x, y - 5, x, y + 5, legPantsR, legPantsG, legPantsB, 2);
+          // Knee joint
+          drawCircle(pixels, width, height, x, y, 1, Math.floor(legPantsR * 1.2), Math.floor(legPantsG * 1.2), Math.floor(legPantsB * 1.2));
+          // Shoe at one end
+          const shoeR = Math.floor(40 * alpha);
+          const shoeG = Math.floor(30 * alpha);
+          const shoeB = Math.floor(25 * alpha);
+          drawCircle(pixels, width, height, x, y + 5, 2, shoeR, shoeG, shoeB);
+          // Bloody stump at other end
+          drawCircle(pixels, width, height, x, y - 5, 2, bloodR, bloodG, bloodB);
+          break;
+      }
+
+      // Blood splatter around gib
+      if (Math.random() < 0.3) {
+        const bloodOffsetX = Math.floor((Math.random() - 0.5) * 6);
+        const bloodOffsetY = Math.floor((Math.random() - 0.5) * 6);
+        setPixel(pixels, width, height, x + bloodOffsetX, y + bloodOffsetY, bloodR, bloodG, bloodB);
+      }
+    }
+  }
+
   // Draw a thicker line (People Playground style limbs)
   function drawThickLine(pixels, width, height, x0, y0, x1, y1, r, g, b, thickness) {
     const dx = x1 - x0;

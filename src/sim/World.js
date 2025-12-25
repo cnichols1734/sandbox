@@ -213,9 +213,10 @@ export function createWorld(width, height) {
         }
         
         // Kill if too close
-        if (dist < radius * 0.2) {
+        if (dist < radius * 0.2 && !person.gibsSpawned) {
           person.health = 0;
           person.alive = false;
+          person.gibsSpawned = true; // Prevent multiple gib spawning!
           // Explode into gibs!
           explodeIntoGibs(person, x, y, force);
         }
@@ -913,9 +914,10 @@ export function createWorld(width, height) {
           }
 
           // If person dies from acid, they "dissolve" - turn into goo/puddle
-          if (person.health <= 0 && !person.acidDissolved) {
+          if (person.health <= 0 && !person.acidDissolved && !person.gibsSpawned) {
             person.acidDissolved = true;
             person.alive = false;
+            person.gibsSpawned = true; // Prevent multiple gib spawning!
             // Create a puddle of "dissolved" material where they died
             for (let px = -3; px <= 3; px++) {
               for (let py = -1; py <= 1; py++) {
