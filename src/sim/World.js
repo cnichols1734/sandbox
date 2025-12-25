@@ -876,6 +876,60 @@ export function createWorld(width, height) {
         setAt(x, y, Materials.smoke.id);
       }
     }
+
+    // Acid damages people! Check if any people are touching acid
+    for (const person of peopleManager.getAll()) {
+      if (!person.alive) continue;
+
+      const pts = person.points;
+      const bodyParts = [pts.head, pts.hip, pts.hand_l, pts.hand_r, pts.foot_l, pts.foot_r];
+
+      for (const part of bodyParts) {
+        const dx = Math.floor(part.x) - x;
+        const dy = Math.floor(part.y) - y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        // If acid is touching a body part (within 1.5 units)
+        if (dist < 1.5) {
+          // Deal acid damage over time
+          person.health -= 0.5; // Gradual damage, not instant
+          person.damageFlash = 8; // Visual damage effect
+
+          // Chance to lose limbs from acid corrosion!
+          if (Math.random() < 0.002) { // Very rare but possible
+            if (Math.random() < 0.5) {
+              detachLimb(person, 'arm');
+            } else {
+              detachLimb(person, 'leg');
+            }
+          }
+
+          // Spawn blood/smoke effect from acid burn
+          if (Math.random() < 0.3) {
+            spawnBlood(part.x, part.y, 2);
+            if (Math.random() < 0.2) {
+              setAt(Math.floor(part.x), Math.floor(part.y), Materials.smoke.id);
+            }
+          }
+
+          // If person dies from acid, they "dissolve" - turn into goo/puddle
+          if (person.health <= 0 && !person.acidDissolved) {
+            person.acidDissolved = true;
+            person.alive = false;
+            // Create a puddle of "dissolved" material where they died
+            for (let px = -3; px <= 3; px++) {
+              for (let py = -1; py <= 1; py++) {
+                if (Math.random() < 0.4) {
+                  setAt(Math.floor(part.x + px), Math.floor(part.y + py), Materials.acid.id);
+                }
+              }
+            }
+            // Spawn some gibs that quickly dissolve
+            explodeIntoGibs(person, part.x, part.y, 2);
+          }
+        }
+      }
+    }
   }
 
   function plasmaReactions(x, y) {
