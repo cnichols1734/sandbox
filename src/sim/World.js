@@ -773,10 +773,13 @@ export function createWorld(width, height) {
 
   function tryPlasma(x, y) {
     // Plasma floats upward like fire but is very hot and conductive
-    if (Math.random() < 0.02) {
+    // Convert to smoke over time (like fire)
+    if (Math.random() < 0.08) {
       setAt(x, y, Materials.smoke.id);
       return true;
     }
+
+    // Rise like fire
     if (getAt(x, y - 1) === Materials.empty.id) {
       swap(x, y, x, y - 1);
       return true;
@@ -790,13 +793,14 @@ export function createWorld(width, height) {
       swap(x, y, x - dir, y - 1);
       return true;
     }
-    // Spread to neighboring empty cells
+
+    // Spread much less aggressively (1% chance instead of 10%)
     const neighbors = [
       [x+1, y], [x-1, y], [x, y+1], [x, y-1],
       [x+1, y+1], [x-1, y+1], [x+1, y-1], [x-1, y-1]
     ];
     for (const [nx, ny] of neighbors) {
-      if (getAt(nx, ny) === Materials.empty.id && Math.random() < 0.1) {
+      if (getAt(nx, ny) === Materials.empty.id && Math.random() < 0.01) {
         setAt(nx, ny, Materials.plasma.id);
       }
     }
@@ -804,20 +808,20 @@ export function createWorld(width, height) {
   }
 
   function tryElectricity(x, y) {
-    // Electricity spreads rapidly through conductive materials and jumps between sources
-    // Very light, rises slightly but conducts everywhere
-    if (Math.random() < 0.1) {
+    // Electricity has a lifetime like smoke and conducts through materials
+    // Decay over time (5% chance to disappear)
+    if (Math.random() < 0.05) {
       setAt(x, y, Materials.empty.id);
       return true;
     }
 
-    // Try to rise slightly
-    if (getAt(x, y - 1) === Materials.empty.id && Math.random() < 0.3) {
+    // Try to rise slightly like a gas
+    if (getAt(x, y - 1) === Materials.empty.id && Math.random() < 0.2) {
       swap(x, y, x, y - 1);
       return true;
     }
 
-    // Conduct through metal materials
+    // Conduct through metal materials much less aggressively
     const conductiveMaterials = [Materials.stone.id, Materials.concrete.id, Materials.glass.id];
     const neighbors = [
       [x+1, y], [x-1, y], [x, y+1], [x, y-1],
@@ -826,10 +830,11 @@ export function createWorld(width, height) {
 
     for (const [nx, ny] of neighbors) {
       const neighborId = getAt(nx, ny);
-      if (neighborId === Materials.empty.id && Math.random() < 0.4) {
+      // Much lower spread chances (2% for empty, 1% for conductive)
+      if (neighborId === Materials.empty.id && Math.random() < 0.02) {
         setAt(nx, ny, Materials.electricity.id);
         return true;
-      } else if (conductiveMaterials.includes(neighborId) && Math.random() < 0.2) {
+      } else if (conductiveMaterials.includes(neighborId) && Math.random() < 0.01) {
         setAt(nx, ny, Materials.electricity.id);
         return true;
       }
