@@ -13,6 +13,10 @@ export const Materials = {
   glass: { id: 11, name: 'glass', color: [180, 220, 255, 230], density: 1100 },
   ember: { id: 12, name: 'ember', color: [220, 80, 30, 230], density: 1100 },
   ash: { id: 13, name: 'ash', color: [90, 90, 90, 240], density: 280 },
+  ice: { id: 14, name: 'ice', color: [180, 220, 255, 200], density: 950 },
+  acid: { id: 15, name: 'acid', color: [100, 255, 100, 220], density: 150 },
+  plasma: { id: 16, name: 'plasma', color: [255, 100, 255, 180], density: 0.1 },
+  electricity: { id: 17, name: 'electricity', color: [255, 255, 100, 160], density: 0.01 },
 };
 
 export const MaterialList = [
@@ -30,6 +34,10 @@ export const MaterialList = [
   Materials.glass,
   Materials.ember,
   Materials.ash,
+  Materials.ice,
+  Materials.acid,
+  Materials.plasma,
+  Materials.electricity,
 ];
 
 export function materialIdFromName(name) {

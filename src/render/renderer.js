@@ -53,6 +53,9 @@ export function createRenderer(canvas, simWidth, simHeight, dpr) {
     drawExplosions(ctx, world.explosions, scaleX, scaleY);
     drawBloodParticles(ctx, world.bloodParticles, scaleX, scaleY);
     drawGibs(ctx, world.gibs, scaleX, scaleY);
+    drawWeapons(ctx, world.getWeapons(), scaleX, scaleY);
+    drawProjectiles(ctx, world.getProjectiles(), scaleX, scaleY);
+    drawVehicles(ctx, world.getVehicles(), scaleX, scaleY);
     
     // Draw health bars and effects in screen space
     drawPersonUI(ctx, people, simWidth, simHeight, canvas.width, canvas.height);
@@ -490,6 +493,175 @@ export function createRenderer(canvas, simWidth, simHeight, dpr) {
       offscreen = { canvas: oc, ctx: ocx };
     }
     return offscreen;
+  }
+
+  function drawWeapons(ctx, weapons, scaleX, scaleY) {
+    for (const weapon of weapons) {
+      ctx.save();
+      ctx.translate(weapon.x * scaleX, weapon.y * scaleY);
+
+      if (weapon.type === 'gun') {
+        // Draw pistol
+        ctx.fillStyle = '#4a4a4a';
+        ctx.fillRect(-3, -2, 6, 4);
+        ctx.fillStyle = '#8b4513';
+        ctx.fillRect(-1, -3, 2, 2);
+        ctx.fillStyle = '#ffff00';
+        ctx.font = '8px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('🔫', 0, 6);
+      } else if (weapon.type === 'grenade') {
+        // Draw grenade
+        ctx.fillStyle = '#2d5016';
+        ctx.fillRect(-2, -3, 4, 6);
+        ctx.fillStyle = '#ff0000';
+        ctx.fillRect(-1, -1, 2, 2);
+        ctx.fillStyle = '#ffff00';
+        ctx.font = '6px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('💣', 0, 8);
+        // Fuse countdown
+        if (weapon.fuse < 120) {
+          ctx.fillStyle = '#ff0000';
+          ctx.font = '4px monospace';
+          ctx.fillText(Math.ceil(weapon.fuse / 60), 0, -4);
+        }
+      } else if (weapon.type === 'sword') {
+        // Draw sword
+        ctx.strokeStyle = '#c0c0c0';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, -8);
+        ctx.lineTo(0, 4);
+        ctx.stroke();
+        ctx.fillStyle = '#ffd700';
+        ctx.fillRect(-1, 4, 2, 2);
+        ctx.fillStyle = '#ffff00';
+        ctx.font = '6px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('⚔️', 0, 10);
+      }
+
+      ctx.restore();
+    }
+  }
+
+  function drawProjectiles(ctx, projectiles, scaleX, scaleY) {
+    for (const proj of projectiles) {
+      ctx.save();
+      ctx.fillStyle = '#ffff00';
+      ctx.beginPath();
+      ctx.arc(proj.x * scaleX, proj.y * scaleY, 2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Bullet trail
+      ctx.strokeStyle = 'rgba(255, 255, 0, 0.5)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      const trailLength = 8;
+      const dx = proj.vx * trailLength;
+      const dy = proj.vy * trailLength;
+      ctx.moveTo(proj.x * scaleX, proj.y * scaleY);
+      ctx.lineTo((proj.x - dx) * scaleX, (proj.y - dy) * scaleY);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+  }
+
+  function drawVehicles(ctx, vehicles, scaleX, scaleY) {
+    for (const vehicle of vehicles) {
+      ctx.save();
+      ctx.translate(vehicle.x * scaleX, vehicle.y * scaleY);
+      ctx.rotate(vehicle.angle);
+
+      if (vehicle.type === 'car') {
+        // Draw car body
+        ctx.fillStyle = vehicle.driver ? '#ff4757' : '#3742fa';
+        ctx.fillRect(-vehicle.width/2 * scaleX, -vehicle.height/2 * scaleY,
+                    vehicle.width * scaleX, vehicle.height * scaleY);
+
+        // Draw wheels
+        ctx.fillStyle = '#2f3542';
+        ctx.fillRect((-vehicle.width/2 + 1) * scaleX, (-vehicle.height/2 - 1) * scaleY, 2 * scaleX, 2 * scaleY);
+        ctx.fillRect((vehicle.width/2 - 3) * scaleX, (-vehicle.height/2 - 1) * scaleY, 2 * scaleX, 2 * scaleY);
+        ctx.fillRect((-vehicle.width/2 + 1) * scaleX, (vehicle.height/2 - 1) * scaleY, 2 * scaleX, 2 * scaleY);
+        ctx.fillRect((vehicle.width/2 - 3) * scaleX, (vehicle.height/2 - 1) * scaleY, 2 * scaleX, 2 * scaleY);
+
+        // Engine indicator
+        if (vehicle.engineOn) {
+          ctx.fillStyle = '#ffa502';
+          ctx.beginPath();
+          ctx.arc(0, -vehicle.height/2 * scaleY - 3, 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+      } else if (vehicle.type === 'boat') {
+        // Draw boat hull
+        ctx.fillStyle = vehicle.driver ? '#ffa502' : '#2f3542';
+        ctx.beginPath();
+        ctx.ellipse(0, vehicle.height/4 * scaleY, vehicle.width/2 * scaleX, vehicle.height/2 * scaleY, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw boat top
+        ctx.fillStyle = '#3742fa';
+        ctx.fillRect(-vehicle.width/4 * scaleX, -vehicle.height/2 * scaleY,
+                    vehicle.width/2 * scaleX, vehicle.height/3 * scaleY);
+
+        // Engine indicator
+        if (vehicle.engineOn) {
+          ctx.fillStyle = '#ffa502';
+          ctx.beginPath();
+          ctx.arc(0, vehicle.height/2 * scaleY + 2, 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+      } else if (vehicle.type === 'plane') {
+        // Draw plane body
+        ctx.fillStyle = vehicle.driver ? '#ff6348' : '#ff4757';
+        ctx.fillRect(-vehicle.width/2 * scaleX, -vehicle.height/2 * scaleY,
+                    vehicle.width * scaleX, vehicle.height * scaleY);
+
+        // Draw wings
+        ctx.fillStyle = '#3742fa';
+        ctx.fillRect(-vehicle.width * scaleX, -vehicle.height/4 * scaleY, vehicle.width/2 * scaleX, 1 * scaleY);
+        ctx.fillRect(vehicle.width/2 * scaleX, -vehicle.height/4 * scaleY, vehicle.width/2 * scaleX, 1 * scaleY);
+
+        // Draw tail
+        ctx.fillRect(-1 * scaleX, -vehicle.height * scaleY, 2 * scaleX, vehicle.height/2 * scaleY);
+
+        // Engine indicator
+        if (vehicle.engineOn) {
+          ctx.fillStyle = '#ffa502';
+          ctx.beginPath();
+          ctx.arc(vehicle.width/2 * scaleX + 2, 0, 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Altitude indicator
+        if (vehicle.altitude > 0) {
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '8px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('↑', 0, -vehicle.height/2 * scaleY - 5);
+        }
+      }
+
+      // Health bar
+      if (vehicle.health < 100) {
+        const barWidth = vehicle.width * scaleX;
+        const barHeight = 3;
+        const healthPercent = vehicle.health / 100;
+
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(-barWidth/2, -vehicle.height/2 * scaleY - 8, barWidth, barHeight);
+
+        ctx.fillStyle = healthPercent > 0.5 ? '#00ff00' : healthPercent > 0.25 ? '#ffff00' : '#ff0000';
+        ctx.fillRect(-barWidth/2, -vehicle.height/2 * scaleY - 8, barWidth * healthPercent, barHeight);
+      }
+
+      ctx.restore();
+    }
   }
 
   function savePNG() {

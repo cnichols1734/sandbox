@@ -305,6 +305,198 @@ body {
   100% { box-shadow: 0 0 20px #ff0000; }
 }
 
+.ice-swatch {
+  background: linear-gradient(135deg, rgba(180, 220, 255, 0.8), rgba(160, 200, 255, 0.4));
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  position: relative;
+}
+
+.ice-swatch::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.6), transparent 50%);
+  border-radius: 2px;
+}
+
+.acid-swatch {
+  background: linear-gradient(135deg, #64ff64, #32ff32);
+  animation: acid-bubble 1.5s ease-in-out infinite;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+@keyframes acid-bubble {
+  0%, 100% { filter: brightness(1) hue-rotate(0deg); }
+  50% { filter: brightness(1.1) hue-rotate(10deg); }
+}
+
+.plasma-swatch {
+  background: linear-gradient(135deg, #ff64ff, #ff32ff, #ff64ff);
+  animation: plasma-arc 0.3s ease-in-out infinite alternate;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 4px rgba(255, 100, 255, 0.6);
+}
+
+@keyframes plasma-arc {
+  from {
+    filter: brightness(1) hue-rotate(0deg);
+    box-shadow: 0 0 4px rgba(255, 100, 255, 0.6);
+  }
+  to {
+    filter: brightness(1.3) hue-rotate(30deg);
+    box-shadow: 0 0 8px rgba(255, 100, 255, 0.9);
+  }
+}
+
+.electricity-swatch {
+  background: linear-gradient(135deg, #ffff64, #ffff32);
+  animation: electricity-spark 0.2s ease-in-out infinite;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  position: relative;
+}
+
+.electricity-swatch::after {
+  content: '⚡';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 8px;
+  opacity: 0.7;
+}
+
+@keyframes electricity-spark {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.5); }
+}
+
+/* Weapon buttons */
+.weapon-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+}
+
+.weapon-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 8px;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 12px;
+  font-weight: 600;
+  min-height: 60px;
+}
+
+.weapon-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-color);
+  transform: translateY(-1px);
+}
+
+.weapon-btn.active {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: white;
+  box-shadow: 0 0 12px rgba(0, 255, 136, 0.4);
+}
+
+.weapon-icon {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.weapon-text {
+  font-size: 10px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Weapon mode body classes */
+body.gun-mode {
+  --accent-color: #ff6b35;
+}
+
+body.grenade-mode {
+  --accent-color: #ff4757;
+}
+
+body.sword-mode {
+  --accent-color: #ffa502;
+}
+
+/* Vehicle buttons */
+.vehicle-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+}
+
+.vehicle-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 8px;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 12px;
+  font-weight: 600;
+  min-height: 60px;
+}
+
+.vehicle-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-color);
+  transform: translateY(-1px);
+}
+
+.vehicle-btn.active {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: white;
+  box-shadow: 0 0 12px rgba(0, 255, 136, 0.4);
+}
+
+.vehicle-icon {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.vehicle-text {
+  font-size: 10px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Vehicle mode body classes */
+body.car-mode {
+  --accent-color: #3742fa;
+}
+
+body.boat-mode {
+  --accent-color: #2f3542;
+}
+
+body.plane-mode {
+  --accent-color: #ff6348;
+}
+
 .mat-name {
   font-size: 11px;
   font-weight: 600;

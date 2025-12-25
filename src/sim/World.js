@@ -30,6 +30,13 @@ export function createWorld(width, height) {
   // Detached limbs - {x, y, vx, vy, rotation, type, color}
   const gibs = [];
 
+  // Weapons system
+  const weapons = [];
+  const projectiles = [];
+
+  // Vehicles system
+  const vehicles = [];
+
   const world = {
     width,
     height,
@@ -51,6 +58,15 @@ export function createWorld(width, height) {
     getPeople,
     spawnBomb,
     triggerExplosion,
+    spawnGun,
+    spawnGrenade,
+    spawnSword,
+    getWeapons,
+    getProjectiles,
+    spawnCar,
+    spawnBoat,
+    spawnPlane,
+    getVehicles,
     spawnBlood,
     spawnGib,
   };
@@ -100,6 +116,9 @@ export function createWorld(width, height) {
     explosions.length = 0;
     bloodParticles.length = 0;
     gibs.length = 0;
+    weapons.length = 0;
+    projectiles.length = 0;
+    vehicles.length = 0;
   }
   
   function spawnPerson(x, y) {
@@ -463,6 +482,14 @@ export function createWorld(width, height) {
             if (tryFlowLava(x, y)) continue;
           } else if (id === Materials.ember.id) {
             if (tryEmber(x, y)) continue;
+          } else if (id === Materials.ice.id) {
+            if (tryMeltIce(x, y)) continue;
+          } else if (id === Materials.acid.id) {
+            if (tryCorrode(x, y)) continue;
+          } else if (id === Materials.plasma.id) {
+            if (tryPlasma(x, y)) continue;
+          } else if (id === Materials.electricity.id) {
+            if (tryElectricity(x, y)) continue;
           }
           // stone/concrete do nothing
           updated[i] = 1;
@@ -488,6 +515,14 @@ export function createWorld(width, height) {
             if (tryFlowLava(x, y)) continue;
           } else if (id === Materials.ember.id) {
             if (tryEmber(x, y)) continue;
+          } else if (id === Materials.ice.id) {
+            if (tryMeltIce(x, y)) continue;
+          } else if (id === Materials.acid.id) {
+            if (tryCorrode(x, y)) continue;
+          } else if (id === Materials.plasma.id) {
+            if (tryPlasma(x, y)) continue;
+          } else if (id === Materials.electricity.id) {
+            if (tryElectricity(x, y)) continue;
           }
           updated[i] = 1;
         }
@@ -501,17 +536,27 @@ export function createWorld(width, height) {
         if (id === Materials.fire.id) spreadFire(x, y);
         if (id === Materials.lava.id) coolLava(x, y);
         if (id === Materials.ember.id) emberReactions(x, y);
+        if (id === Materials.ice.id) iceReactions(x, y);
+        if (id === Materials.acid.id) acidReactions(x, y);
+        if (id === Materials.plasma.id) plasmaReactions(x, y);
+        if (id === Materials.electricity.id) electricityReactions(x, y);
       }
     }
     
     // Update people (People Playground style!)
     peopleManager.update(world);
-    
+
     // Update bombs, explosions, blood, and gibs
     updateBombs();
     updateExplosions();
     updateBloodParticles();
     updateGibs();
+
+    // Update weapons system
+    updateWeapons();
+
+    // Update vehicles
+    updateVehicles();
   }
 
   // Fluids and gases
@@ -667,6 +712,575 @@ export function createWorld(width, height) {
         const dy = y - cy;
         if (dx * dx + dy * dy <= r2) {
           setAt(x, y, id);
+        }
+      }
+    }
+  }
+
+  // ===== NEW MATERIAL PHYSICS =====
+
+  function tryMeltIce(x, y) {
+    // Ice is solid but melts when near heat sources
+    // Falls like sand but slower
+    if (getAt(x, y + 1) === Materials.empty.id) {
+      swap(x, y, x, y + 1);
+      return true;
+    }
+    // Melt into water when touching fire, lava, or plasma
+    const neighbors = [
+      getAt(x+1, y), getAt(x-1, y), getAt(x, y+1), getAt(x, y-1),
+      getAt(x+1, y+1), getAt(x-1, y+1), getAt(x+1, y-1), getAt(x-1, y-1)
+    ];
+    if (neighbors.includes(Materials.fire.id) || neighbors.includes(Materials.lava.id) || neighbors.includes(Materials.plasma.id)) {
+      if (Math.random() < 0.3) {
+        setAt(x, y, Materials.water.id);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function tryCorrode(x, y) {
+    // Acid flows like water but corrodes materials
+    if (getAt(x, y + 1) === Materials.empty.id) {
+      swap(x, y, x, y + 1);
+      return true;
+    }
+    const dir = Math.random() < 0.5 ? -1 : 1;
+    if (getAt(x - dir, y + 1) === Materials.empty.id) {
+      swap(x, y, x - dir, y + 1);
+      return true;
+    }
+    if (getAt(x + dir, y + 1) === Materials.empty.id) {
+      swap(x, y, x + dir, y + 1);
+      return true;
+    }
+    const maxSpread = 3 + (Math.random() * 3) | 0;
+    for (let dx = 1; dx <= maxSpread; dx++) {
+      if (getAt(x + dx, y) === Materials.empty.id) {
+        swap(x, y, x + dx, y);
+        return true;
+      }
+    }
+    for (let dx = 1; dx <= maxSpread; dx++) {
+      if (getAt(x - dx, y) === Materials.empty.id) {
+        swap(x, y, x - dx, y);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function tryPlasma(x, y) {
+    // Plasma floats upward like fire but is very hot and conductive
+    if (Math.random() < 0.02) {
+      setAt(x, y, Materials.smoke.id);
+      return true;
+    }
+    if (getAt(x, y - 1) === Materials.empty.id) {
+      swap(x, y, x, y - 1);
+      return true;
+    }
+    const dir = Math.random() < 0.5 ? -1 : 1;
+    if (getAt(x + dir, y - 1) === Materials.empty.id) {
+      swap(x, y, x + dir, y - 1);
+      return true;
+    }
+    if (getAt(x - dir, y - 1) === Materials.empty.id) {
+      swap(x, y, x - dir, y - 1);
+      return true;
+    }
+    // Spread to neighboring empty cells
+    const neighbors = [
+      [x+1, y], [x-1, y], [x, y+1], [x, y-1],
+      [x+1, y+1], [x-1, y+1], [x+1, y-1], [x-1, y-1]
+    ];
+    for (const [nx, ny] of neighbors) {
+      if (getAt(nx, ny) === Materials.empty.id && Math.random() < 0.1) {
+        setAt(nx, ny, Materials.plasma.id);
+      }
+    }
+    return false;
+  }
+
+  function tryElectricity(x, y) {
+    // Electricity spreads rapidly through conductive materials and jumps between sources
+    // Very light, rises slightly but conducts everywhere
+    if (Math.random() < 0.1) {
+      setAt(x, y, Materials.empty.id);
+      return true;
+    }
+
+    // Try to rise slightly
+    if (getAt(x, y - 1) === Materials.empty.id && Math.random() < 0.3) {
+      swap(x, y, x, y - 1);
+      return true;
+    }
+
+    // Conduct through metal materials
+    const conductiveMaterials = [Materials.stone.id, Materials.concrete.id, Materials.glass.id];
+    const neighbors = [
+      [x+1, y], [x-1, y], [x, y+1], [x, y-1],
+      [x+1, y+1], [x-1, y+1], [x+1, y-1], [x-1, y-1]
+    ];
+
+    for (const [nx, ny] of neighbors) {
+      const neighborId = getAt(nx, ny);
+      if (neighborId === Materials.empty.id && Math.random() < 0.4) {
+        setAt(nx, ny, Materials.electricity.id);
+        return true;
+      } else if (conductiveMaterials.includes(neighborId) && Math.random() < 0.2) {
+        setAt(nx, ny, Materials.electricity.id);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // ===== NEW MATERIAL REACTIONS =====
+
+  function iceReactions(x, y) {
+    // Ice turns water to ice when touching
+    const neighbors = [
+      [x+1, y], [x-1, y], [x, y+1], [x, y-1]
+    ];
+    for (const [nx, ny] of neighbors) {
+      if (getAt(nx, ny) === Materials.water.id && Math.random() < 0.1) {
+        setAt(nx, ny, Materials.ice.id);
+      }
+    }
+  }
+
+  function acidReactions(x, y) {
+    // Acid corrodes most materials over time
+    const neighbors = [
+      [x+1, y], [x-1, y], [x, y+1], [x, y-1]
+    ];
+    for (const [nx, ny] of neighbors) {
+      const neighborId = getAt(nx, ny);
+      // Acid destroys wood, concrete, and sand quickly
+      if ((neighborId === Materials.wood.id || neighborId === Materials.concrete.id ||
+           neighborId === Materials.sand.id) && Math.random() < 0.05) {
+        setAt(nx, ny, Materials.empty.id);
+        // Create smoke when corroding
+        if (Math.random() < 0.3) setAt(nx, ny, Materials.smoke.id);
+      }
+      // Acid neutralizes with water
+      else if (neighborId === Materials.water.id && Math.random() < 0.1) {
+        setAt(nx, ny, Materials.smoke.id);
+        setAt(x, y, Materials.smoke.id);
+      }
+    }
+  }
+
+  function plasmaReactions(x, y) {
+    // Plasma is extremely hot and destructive
+    const neighbors = [
+      [x+1, y], [x-1, y], [x, y+1], [x, y-1],
+      [x+1, y+1], [x-1, y+1], [x+1, y-1], [x-1, y-1]
+    ];
+    for (const [nx, ny] of neighbors) {
+      const neighborId = getAt(nx, ny);
+      // Plasma destroys most materials
+      if (neighborId !== Materials.empty.id && neighborId !== Materials.plasma.id &&
+          neighborId !== Materials.stone.id && Math.random() < 0.3) {
+        setAt(nx, ny, Materials.fire.id);
+      }
+      // Plasma turns water to steam instantly
+      else if (neighborId === Materials.water.id) {
+        setAt(nx, ny, Materials.steam.id);
+      }
+      // Plasma turns ice to water
+      else if (neighborId === Materials.ice.id) {
+        setAt(nx, ny, Materials.water.id);
+      }
+    }
+  }
+
+  function electricityReactions(x, y) {
+    // Electricity conducts through metal and creates sparks
+    const neighbors = [
+      [x+1, y], [x-1, y], [x, y+1], [x, y-1]
+    ];
+    for (const [nx, ny] of neighbors) {
+      const neighborId = getAt(nx, ny);
+      // Conduct through water
+      if (neighborId === Materials.water.id && Math.random() < 0.4) {
+        setAt(nx, ny, Materials.electricity.id);
+      }
+      // Create sparks when hitting certain materials
+      else if ((neighborId === Materials.stone.id || neighborId === Materials.concrete.id) &&
+               Math.random() < 0.01) {
+        setAt(nx, ny, Materials.fire.id);
+      }
+      // Chain reaction with other electricity
+      else if (neighborId === Materials.electricity.id && Math.random() < 0.3) {
+        // Create a small explosion effect
+        for (let dx = -1; dx <= 1; dx++) {
+          for (let dy = -1; dy <= 1; dy++) {
+            if (getAt(x + dx, y + dy) === Materials.empty.id && Math.random() < 0.5) {
+              setAt(x + dx, y + dy, Materials.fire.id);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // ===== WEAPONS SYSTEM =====
+
+  function spawnGun(x, y) {
+    weapons.push({
+      x: x,
+      y: y,
+      type: 'gun',
+      ammo: 12,
+      cooldown: 0,
+      size: 4,
+    });
+  }
+
+  function spawnGrenade(x, y) {
+    weapons.push({
+      x: x,
+      y: y,
+      type: 'grenade',
+      fuse: 180, // 3 seconds
+      thrown: false,
+      vx: 0,
+      vy: 0,
+      size: 3,
+    });
+  }
+
+  function spawnSword(x, y) {
+    weapons.push({
+      x: x,
+      y: y,
+      type: 'sword',
+      durability: 100,
+      size: 5,
+    });
+  }
+
+  function getWeapons() {
+    return weapons;
+  }
+
+  function getProjectiles() {
+    return projectiles;
+  }
+
+  // Weapon physics and behavior
+  function updateWeapons() {
+    // Update grenades (physics and explosions)
+    for (let i = weapons.length - 1; i >= 0; i--) {
+      const weapon = weapons[i];
+
+      if (weapon.type === 'grenade') {
+        if (!weapon.thrown) {
+          // Grenade sits on ground, counts down fuse
+          weapon.fuse--;
+          if (weapon.fuse <= 0) {
+            triggerExplosion(weapon.x, weapon.y, 25, 8);
+            weapons.splice(i, 1);
+            continue;
+          }
+        } else {
+          // Thrown grenade physics
+          weapon.vy += 0.15; // Gravity
+          weapon.x += weapon.vx;
+          weapon.y += weapon.vy;
+          weapon.vx *= 0.99; // Air resistance
+
+          // Bounce off ground/walls
+          const below = getAt(Math.floor(weapon.x), Math.floor(weapon.y + 1));
+          if (below !== Materials.empty.id && below !== Materials.water.id) {
+            weapon.vy *= -0.5;
+            weapon.vx *= 0.8;
+            if (Math.abs(weapon.vy) < 1) {
+              weapon.thrown = false; // Stop bouncing, start fuse
+              weapon.fuse = 120; // 2 seconds
+              weapon.vy = 0;
+            }
+          }
+
+          // Wall collision
+          if (weapon.x < 0 || weapon.x > width) weapon.vx *= -0.5;
+          if (weapon.y > height) {
+            weapons.splice(i, 1);
+            continue;
+          }
+
+          weapon.fuse--;
+          if (weapon.fuse <= 0) {
+            triggerExplosion(weapon.x, weapon.y, 25, 8);
+            weapons.splice(i, 1);
+            continue;
+          }
+        }
+      }
+    }
+
+    // Update projectiles (bullets)
+    for (let i = projectiles.length - 1; i >= 0; i--) {
+      const proj = projectiles[i];
+
+      proj.x += proj.vx;
+      proj.y += proj.vy;
+      proj.life--;
+
+      // Check collision with world
+      const hitMaterial = getAt(Math.floor(proj.x), Math.floor(proj.y));
+      if (hitMaterial !== Materials.empty.id && hitMaterial !== Materials.water.id) {
+        // Hit something solid - create impact effect
+        if (Math.random() < 0.5) {
+          setAt(Math.floor(proj.x), Math.floor(proj.y), Materials.smoke.id);
+        }
+        projectiles.splice(i, 1);
+        continue;
+      }
+
+      // Check collision with people
+      for (const person of peopleManager.getAll()) {
+        const dx = person.points.hip.x - proj.x;
+        const dy = person.points.hip.y - proj.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < 3 && person.alive) {
+          // Hit a person!
+          person.health -= 25;
+          person.damageFlash = 10;
+          spawnBlood(proj.x, proj.y, 10);
+          projectiles.splice(i, 1);
+          break;
+        }
+      }
+
+      // Remove old projectiles
+      if (proj.life <= 0 || proj.x < 0 || proj.x > width || proj.y > height) {
+        projectiles.splice(i, 1);
+      }
+    }
+  }
+
+  function throwGrenade(weaponIndex, vx, vy) {
+    if (weaponIndex >= 0 && weaponIndex < weapons.length) {
+      const weapon = weapons[weaponIndex];
+      if (weapon.type === 'grenade') {
+        weapon.thrown = true;
+        weapon.vx = vx;
+        weapon.vy = vy;
+        weapon.fuse = 180; // Reset fuse to 3 seconds when thrown
+      }
+    }
+  }
+
+  function fireGun(weaponIndex, targetX, targetY) {
+    if (weaponIndex >= 0 && weaponIndex < weapons.length) {
+      const weapon = weapons[weaponIndex];
+      if (weapon.type === 'gun' && weapon.ammo > 0 && weapon.cooldown <= 0) {
+        weapon.ammo--;
+        weapon.cooldown = 30; // 0.5 second cooldown
+
+        // Calculate direction to target
+        const dx = targetX - weapon.x;
+        const dy = targetY - weapon.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const speed = 8;
+
+        projectiles.push({
+          x: weapon.x,
+          y: weapon.y,
+          vx: (dx / dist) * speed,
+          vy: (dy / dist) * speed,
+          life: 120, // 2 seconds
+          damage: 25,
+        });
+      }
+    }
+  }
+
+  // Update weapon cooldowns
+  weapons.forEach(weapon => {
+    if (weapon.cooldown > 0) weapon.cooldown--;
+  });
+
+  // ===== VEHICLES SYSTEM =====
+
+  function spawnCar(x, y) {
+    vehicles.push({
+      x: x,
+      y: y,
+      type: 'car',
+      vx: 0,
+      vy: 0,
+      angle: 0,
+      width: 12,
+      height: 6,
+      maxSpeed: 4,
+      acceleration: 0.1,
+      friction: 0.95,
+      health: 100,
+      fuel: 100,
+      engineOn: false,
+      driver: null, // person driving
+    });
+  }
+
+  function spawnBoat(x, y) {
+    vehicles.push({
+      x: x,
+      y: y,
+      type: 'boat',
+      vx: 0,
+      vy: 0,
+      angle: 0,
+      width: 16,
+      height: 8,
+      maxSpeed: 3,
+      acceleration: 0.05,
+      friction: 0.98,
+      health: 80,
+      fuel: 100,
+      engineOn: false,
+      driver: null,
+      floating: true,
+    });
+  }
+
+  function spawnPlane(x, y) {
+    vehicles.push({
+      x: x,
+      y: y,
+      type: 'plane',
+      vx: 0,
+      vy: 0,
+      angle: 0,
+      width: 20,
+      height: 6,
+      maxSpeed: 8,
+      acceleration: 0.15,
+      friction: 0.99,
+      health: 60,
+      fuel: 100,
+      engineOn: false,
+      driver: null,
+      flying: true,
+      altitude: 0,
+    });
+  }
+
+  function getVehicles() {
+    return vehicles;
+  }
+
+  function updateVehicles() {
+    for (let i = vehicles.length - 1; i >= 0; i--) {
+      const vehicle = vehicles[i];
+
+      // Physics
+      if (vehicle.flying) {
+        // Planes have lift and can fly
+        vehicle.altitude = Math.max(0, vehicle.altitude + vehicle.vy * 0.1);
+        if (vehicle.altitude > 0) {
+          vehicle.vy -= 0.02; // Gravity but weaker when flying
+        } else {
+          vehicle.vy += 0.15; // Normal gravity when on ground
+        }
+      } else if (vehicle.floating) {
+        // Boats float on water
+        const below = getAt(Math.floor(vehicle.x), Math.floor(vehicle.y + vehicle.height/2 + 1));
+        if (below === Materials.water.id) {
+          vehicle.vy = Math.max(vehicle.vy - 0.1, -0.5); // Buoyancy
+        } else {
+          vehicle.vy += 0.15; // Normal gravity
+        }
+      } else {
+        // Cars have normal gravity
+        vehicle.vy += 0.15;
+      }
+
+      // Apply friction
+      vehicle.vx *= vehicle.friction;
+      vehicle.vy *= vehicle.friction;
+
+      // Move vehicle
+      vehicle.x += vehicle.vx;
+      vehicle.y += vehicle.vy;
+
+      // Ground collision for non-flying vehicles
+      if (!vehicle.flying) {
+        const groundY = vehicle.y + vehicle.height/2;
+        const groundMaterial = getAt(Math.floor(vehicle.x), Math.floor(groundY));
+        if (groundMaterial !== Materials.empty.id && groundMaterial !== Materials.water.id) {
+          vehicle.y = groundY - vehicle.height/2 - 1;
+          vehicle.vy = 0;
+
+          // Bounce slightly
+          if (Math.abs(vehicle.vy) > 1) {
+            vehicle.vy *= -0.3;
+          }
+        }
+      }
+
+      // Wall collision
+      if (vehicle.x - vehicle.width/2 < 0) {
+        vehicle.x = vehicle.width/2;
+        vehicle.vx *= -0.5;
+      }
+      if (vehicle.x + vehicle.width/2 > width) {
+        vehicle.x = width - vehicle.width/2;
+        vehicle.vx *= -0.5;
+      }
+
+      // Remove destroyed vehicles
+      if (vehicle.health <= 0) {
+        vehicles.splice(i, 1);
+        continue;
+      }
+
+      // Vehicle controls (simple AI for now)
+      if (vehicle.driver && Math.random() < 0.1) {
+        // Random driver behavior
+        if (Math.random() < 0.3) {
+          vehicle.angle += (Math.random() - 0.5) * 0.2;
+        }
+        if (Math.random() < 0.2) {
+          vehicle.engineOn = !vehicle.engineOn;
+        }
+      }
+
+      // Engine physics
+      if (vehicle.engineOn && vehicle.fuel > 0) {
+        vehicle.fuel -= 0.01;
+        const forwardX = Math.cos(vehicle.angle) * vehicle.acceleration;
+        const forwardY = Math.sin(vehicle.angle) * vehicle.acceleration;
+
+        vehicle.vx += forwardX;
+        vehicle.vy += forwardY;
+
+        // Speed limit
+        const speed = Math.sqrt(vehicle.vx * vehicle.vx + vehicle.vy * vehicle.vy);
+        if (speed > vehicle.maxSpeed) {
+          vehicle.vx = (vehicle.vx / speed) * vehicle.maxSpeed;
+          vehicle.vy = (vehicle.vy / speed) * vehicle.maxSpeed;
+        }
+      }
+
+      // Find nearby people to drive vehicles
+      if (!vehicle.driver) {
+        for (const person of peopleManager.getAll()) {
+          const dx = person.points.hip.x - vehicle.x;
+          const dy = person.points.hip.y - vehicle.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < 8 && person.alive && !person.driving) {
+            vehicle.driver = person;
+            person.driving = vehicle;
+            console.log(`${vehicle.type} found a driver!`);
+            break;
+          }
         }
       }
     }

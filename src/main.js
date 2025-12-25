@@ -20,6 +20,12 @@ let isPouring = false;
 let rainEnabled = false;
 let spawnPersonMode = false; // People Playground mode!
 let spawnBombMode = false; // Bomb mode!
+let spawnGunMode = false; // Gun spawn mode!
+let spawnGrenadeMode = false; // Grenade spawn mode!
+let spawnSwordMode = false; // Sword spawn mode!
+let spawnCarMode = false; // Car spawn mode!
+let spawnBoatMode = false; // Boat spawn mode!
+let spawnPlaneMode = false; // Plane spawn mode!
 
 // Resize display backing store to keep it sharp on DPR screens
 function resizeDisplayCanvas() {
@@ -68,6 +74,50 @@ displayCanvas.addEventListener('pointerdown', (e) => {
     console.log('💣 Bomb placed! 2 seconds until detonation...');
     return;
   }
+
+  // Weapon spawn modes!
+  if (spawnGunMode) {
+    const { x, y } = canvasToSimCoords(e.clientX, e.clientY);
+    world.spawnGun(x, y);
+    console.log('🔫 Pistol placed!');
+    return;
+  }
+
+  if (spawnGrenadeMode) {
+    const { x, y } = canvasToSimCoords(e.clientX, e.clientY);
+    world.spawnGrenade(x, y);
+    console.log('💣 Grenade placed! 3 second fuse...');
+    return;
+  }
+
+  if (spawnSwordMode) {
+    const { x, y } = canvasToSimCoords(e.clientX, e.clientY);
+    world.spawnSword(x, y);
+    console.log('⚔️ Sword placed!');
+    return;
+  }
+
+  // Vehicle spawn modes!
+  if (spawnCarMode) {
+    const { x, y } = canvasToSimCoords(e.clientX, e.clientY);
+    world.spawnCar(x, y);
+    console.log('🚗 Car placed!');
+    return;
+  }
+
+  if (spawnBoatMode) {
+    const { x, y } = canvasToSimCoords(e.clientX, e.clientY);
+    world.spawnBoat(x, y);
+    console.log('🚤 Boat placed!');
+    return;
+  }
+
+  if (spawnPlaneMode) {
+    const { x, y } = canvasToSimCoords(e.clientX, e.clientY);
+    world.spawnPlane(x, y);
+    console.log('✈️ Plane placed!');
+    return;
+  }
   
   isPointerDown = true;
   lastPaintX = e.clientX; lastPaintY = e.clientY;
@@ -99,8 +149,14 @@ initUI({
   onSelectMaterial: (name) => {
     if (name === 'erase') currentMaterial = Materials.empty.id;
     else currentMaterial = materialIdFromName(name);
-    spawnPersonMode = false; // Exit spawn mode when selecting material
-    spawnBombMode = false; // Exit bomb mode when selecting material
+    spawnPersonMode = false; // Exit spawn modes when selecting material
+    spawnBombMode = false;
+    spawnGunMode = false;
+    spawnGrenadeMode = false;
+    spawnSwordMode = false;
+    spawnCarMode = false;
+    spawnBoatMode = false;
+    spawnPlaneMode = false;
   },
   onChangeBrush: (size) => { brushRadius = size; },
   onPlayPause: () => { isRunning = !isRunning; return isRunning; },
@@ -120,9 +176,98 @@ initUI({
   },
   onToggleBombMode: (enabled) => {
     spawnBombMode = enabled;
-    if (enabled) spawnPersonMode = false; // Only one mode at a time
+    if (enabled) {
+      spawnPersonMode = false;
+      spawnGunMode = false;
+      spawnGrenadeMode = false;
+      spawnSwordMode = false;
+    }
     if (enabled) {
       console.log('💣 Bomb mode activated! Click anywhere to place a bomb.');
+    }
+  },
+  onToggleGunMode: (enabled) => {
+    spawnGunMode = enabled;
+    if (enabled) {
+      spawnPersonMode = false;
+      spawnBombMode = false;
+      spawnGrenadeMode = false;
+      spawnSwordMode = false;
+    }
+    if (enabled) {
+      console.log('🔫 Gun mode activated! Click anywhere to place a pistol.');
+    }
+  },
+  onToggleGrenadeMode: (enabled) => {
+    spawnGrenadeMode = enabled;
+    if (enabled) {
+      spawnPersonMode = false;
+      spawnBombMode = false;
+      spawnGunMode = false;
+      spawnSwordMode = false;
+    }
+    if (enabled) {
+      console.log('💣 Grenade mode activated! Click anywhere to place a grenade.');
+    }
+  },
+  onToggleSwordMode: (enabled) => {
+    spawnSwordMode = enabled;
+    if (enabled) {
+      spawnPersonMode = false;
+      spawnBombMode = false;
+      spawnGunMode = false;
+      spawnGrenadeMode = false;
+      spawnCarMode = false;
+      spawnBoatMode = false;
+      spawnPlaneMode = false;
+    }
+    if (enabled) {
+      console.log('⚔️ Sword mode activated! Click anywhere to place a sword.');
+    }
+  },
+  onToggleCarMode: (enabled) => {
+    spawnCarMode = enabled;
+    if (enabled) {
+      spawnPersonMode = false;
+      spawnBombMode = false;
+      spawnGunMode = false;
+      spawnGrenadeMode = false;
+      spawnSwordMode = false;
+      spawnBoatMode = false;
+      spawnPlaneMode = false;
+    }
+    if (enabled) {
+      console.log('🚗 Car mode activated! Click anywhere to place a car.');
+    }
+  },
+  onToggleBoatMode: (enabled) => {
+    spawnBoatMode = enabled;
+    if (enabled) {
+      spawnPersonMode = false;
+      spawnBombMode = false;
+      spawnGunMode = false;
+      spawnGrenadeMode = false;
+      spawnSwordMode = false;
+      spawnCarMode = false;
+      spawnPlaneMode = false;
+    }
+    if (enabled) {
+      console.log('🚤 Boat mode activated! Click anywhere to place a boat.');
+    }
+  },
+  onTogglePlaneMode: (enabled) => {
+    spawnPlaneMode = enabled;
+    if (enabled) {
+      spawnPersonMode = false;
+      spawnBombMode = false;
+      spawnGunMode = false;
+      spawnGrenadeMode = false;
+      spawnSwordMode = false;
+      spawnCarMode = false;
+      spawnBoatMode = false;
+    }
+    if (enabled) {
+      console.log('✈️ Plane mode activated! Click anywhere to place a plane.');
     }
   },
 });

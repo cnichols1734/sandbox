@@ -1,9 +1,15 @@
-export function initUI({ onSelectMaterial, onChangeBrush, onPlayPause, onStep, onClear, onSave, onToggleRain, onToggleSpawnMode, onToggleBombMode }) {
+export function initUI({ onSelectMaterial, onChangeBrush, onPlayPause, onStep, onClear, onSave, onToggleRain, onToggleSpawnMode, onToggleBombMode, onToggleGunMode, onToggleGrenadeMode, onToggleSwordMode, onToggleCarMode, onToggleBoatMode, onTogglePlaneMode }) {
   // Material buttons (new class names)
   const materialButtons = Array.from(document.querySelectorAll('.material-btn'));
   const eraserButton = document.querySelector('.tool-btn.eraser');
   const spawnPersonBtn = document.getElementById('spawnPerson');
   const spawnBombBtn = document.getElementById('spawnBomb');
+  const spawnGunBtn = document.getElementById('spawnGun');
+  const spawnGrenadeBtn = document.getElementById('spawnGrenade');
+  const spawnSwordBtn = document.getElementById('spawnSword');
+  const spawnCarBtn = document.getElementById('spawnCar');
+  const spawnBoatBtn = document.getElementById('spawnBoat');
+  const spawnPlaneBtn = document.getElementById('spawnPlane');
   const brushSlider = document.getElementById('brushSize');
   const brushValue = document.getElementById('brushSizeValue');
   const brushPreview = document.getElementById('brushPreview');
@@ -20,8 +26,20 @@ export function initUI({ onSelectMaterial, onChangeBrush, onPlayPause, onStep, o
     if (eraserButton) eraserButton.classList.remove('active');
     if (spawnPersonBtn) spawnPersonBtn.classList.remove('active');
     if (spawnBombBtn) spawnBombBtn.classList.remove('active');
+    if (spawnGunBtn) spawnGunBtn.classList.remove('active');
+    if (spawnGrenadeBtn) spawnGrenadeBtn.classList.remove('active');
+    if (spawnSwordBtn) spawnSwordBtn.classList.remove('active');
+    if (spawnCarBtn) spawnCarBtn.classList.remove('active');
+    if (spawnBoatBtn) spawnBoatBtn.classList.remove('active');
+    if (spawnPlaneBtn) spawnPlaneBtn.classList.remove('active');
     document.body.classList.remove('spawn-mode');
     document.body.classList.remove('bomb-mode');
+    document.body.classList.remove('gun-mode');
+    document.body.classList.remove('grenade-mode');
+    document.body.classList.remove('sword-mode');
+    document.body.classList.remove('car-mode');
+    document.body.classList.remove('boat-mode');
+    document.body.classList.remove('plane-mode');
     if (canvasOverlay) canvasOverlay.classList.remove('active');
     
     // Set new active
@@ -34,6 +52,13 @@ export function initUI({ onSelectMaterial, onChangeBrush, onPlayPause, onStep, o
       setActive(btn);
       onSelectMaterial(btn.dataset.material);
       if (onToggleSpawnMode) onToggleSpawnMode(false);
+      if (onToggleBombMode) onToggleBombMode(false);
+      if (onToggleGunMode) onToggleGunMode(false);
+      if (onToggleGrenadeMode) onToggleGrenadeMode(false);
+      if (onToggleSwordMode) onToggleSwordMode(false);
+      if (onToggleCarMode) onToggleCarMode(false);
+      if (onToggleBoatMode) onToggleBoatMode(false);
+      if (onTogglePlaneMode) onTogglePlaneMode(false);
     });
   }
   
@@ -43,6 +68,13 @@ export function initUI({ onSelectMaterial, onChangeBrush, onPlayPause, onStep, o
       setActive(eraserButton);
       onSelectMaterial('erase');
       if (onToggleSpawnMode) onToggleSpawnMode(false);
+      if (onToggleBombMode) onToggleBombMode(false);
+      if (onToggleGunMode) onToggleGunMode(false);
+      if (onToggleGrenadeMode) onToggleGrenadeMode(false);
+      if (onToggleSwordMode) onToggleSwordMode(false);
+      if (onToggleCarMode) onToggleCarMode(false);
+      if (onToggleBoatMode) onToggleBoatMode(false);
+      if (onTogglePlaneMode) onTogglePlaneMode(false);
     });
   }
   
@@ -58,6 +90,9 @@ export function initUI({ onSelectMaterial, onChangeBrush, onPlayPause, onStep, o
         if (canvasOverlay) canvasOverlay.classList.add('active');
         if (onToggleSpawnMode) onToggleSpawnMode(true);
         if (onToggleBombMode) onToggleBombMode(false);
+        if (onToggleGunMode) onToggleGunMode(false);
+        if (onToggleGrenadeMode) onToggleGrenadeMode(false);
+        if (onToggleSwordMode) onToggleSwordMode(false);
       } else {
         if (onToggleSpawnMode) onToggleSpawnMode(false);
       }
@@ -79,8 +114,181 @@ export function initUI({ onSelectMaterial, onChangeBrush, onPlayPause, onStep, o
         }
         if (onToggleBombMode) onToggleBombMode(true);
         if (onToggleSpawnMode) onToggleSpawnMode(false);
+        if (onToggleGunMode) onToggleGunMode(false);
+        if (onToggleGrenadeMode) onToggleGrenadeMode(false);
+        if (onToggleSwordMode) onToggleSwordMode(false);
       } else {
         if (onToggleBombMode) onToggleBombMode(false);
+        if (canvasOverlay) {
+          canvasOverlay.querySelector('.overlay-text').textContent = 'Click anywhere to spawn a person';
+        }
+      }
+    });
+  }
+
+  // Weapon buttons
+  if (spawnGunBtn) {
+    spawnGunBtn.addEventListener('click', () => {
+      const isActive = spawnGunBtn.classList.contains('active');
+      setActive(null); // Clear material selection
+
+      if (!isActive) {
+        spawnGunBtn.classList.add('active');
+        document.body.classList.add('gun-mode');
+        if (canvasOverlay) {
+          canvasOverlay.classList.add('active');
+          canvasOverlay.querySelector('.overlay-text').textContent = 'Click anywhere to place a pistol!';
+        }
+        if (onToggleGunMode) onToggleGunMode(true);
+        if (onToggleSpawnMode) onToggleSpawnMode(false);
+        if (onToggleBombMode) onToggleBombMode(false);
+        if (onToggleGrenadeMode) onToggleGrenadeMode(false);
+        if (onToggleSwordMode) onToggleSwordMode(false);
+        if (onToggleCarMode) onToggleCarMode(false);
+        if (onToggleBoatMode) onToggleBoatMode(false);
+        if (onTogglePlaneMode) onTogglePlaneMode(false);
+      } else {
+        if (onToggleGunMode) onToggleGunMode(false);
+        if (canvasOverlay) {
+          canvasOverlay.querySelector('.overlay-text').textContent = 'Click anywhere to spawn a person';
+        }
+      }
+    });
+  }
+
+  if (spawnGrenadeBtn) {
+    spawnGrenadeBtn.addEventListener('click', () => {
+      const isActive = spawnGrenadeBtn.classList.contains('active');
+      setActive(null); // Clear material selection
+
+      if (!isActive) {
+        spawnGrenadeBtn.classList.add('active');
+        document.body.classList.add('grenade-mode');
+        if (canvasOverlay) {
+          canvasOverlay.classList.add('active');
+          canvasOverlay.querySelector('.overlay-text').textContent = 'Click anywhere to place a grenade!';
+        }
+        if (onToggleGrenadeMode) onToggleGrenadeMode(true);
+        if (onToggleSpawnMode) onToggleSpawnMode(false);
+        if (onToggleBombMode) onToggleBombMode(false);
+        if (onToggleGunMode) onToggleGunMode(false);
+        if (onToggleSwordMode) onToggleSwordMode(false);
+      } else {
+        if (onToggleGrenadeMode) onToggleGrenadeMode(false);
+        if (canvasOverlay) {
+          canvasOverlay.querySelector('.overlay-text').textContent = 'Click anywhere to spawn a person';
+        }
+      }
+    });
+  }
+
+  if (spawnSwordBtn) {
+    spawnSwordBtn.addEventListener('click', () => {
+      const isActive = spawnSwordBtn.classList.contains('active');
+      setActive(null); // Clear material selection
+
+      if (!isActive) {
+        spawnSwordBtn.classList.add('active');
+        document.body.classList.add('sword-mode');
+        if (canvasOverlay) {
+          canvasOverlay.classList.add('active');
+          canvasOverlay.querySelector('.overlay-text').textContent = 'Click anywhere to place a sword!';
+        }
+        if (onToggleSwordMode) onToggleSwordMode(true);
+        if (onToggleSpawnMode) onToggleSpawnMode(false);
+        if (onToggleBombMode) onToggleBombMode(false);
+        if (onToggleGunMode) onToggleGunMode(false);
+        if (onToggleGrenadeMode) onToggleGrenadeMode(false);
+      } else {
+        if (onToggleSwordMode) onToggleSwordMode(false);
+        if (canvasOverlay) {
+          canvasOverlay.querySelector('.overlay-text').textContent = 'Click anywhere to spawn a person';
+        }
+      }
+    });
+  }
+
+  // Vehicle buttons
+  if (spawnCarBtn) {
+    spawnCarBtn.addEventListener('click', () => {
+      const isActive = spawnCarBtn.classList.contains('active');
+      setActive(null); // Clear material selection
+
+      if (!isActive) {
+        spawnCarBtn.classList.add('active');
+        document.body.classList.add('car-mode');
+        if (canvasOverlay) {
+          canvasOverlay.classList.add('active');
+          canvasOverlay.querySelector('.overlay-text').textContent = 'Click anywhere to place a car!';
+        }
+        if (onToggleCarMode) onToggleCarMode(true);
+        if (onToggleSpawnMode) onToggleSpawnMode(false);
+        if (onToggleBombMode) onToggleBombMode(false);
+        if (onToggleGunMode) onToggleGunMode(false);
+        if (onToggleGrenadeMode) onToggleGrenadeMode(false);
+        if (onToggleSwordMode) onToggleSwordMode(false);
+        if (onToggleBoatMode) onToggleBoatMode(false);
+        if (onTogglePlaneMode) onTogglePlaneMode(false);
+      } else {
+        if (onToggleCarMode) onToggleCarMode(false);
+        if (canvasOverlay) {
+          canvasOverlay.querySelector('.overlay-text').textContent = 'Click anywhere to spawn a person';
+        }
+      }
+    });
+  }
+
+  if (spawnBoatBtn) {
+    spawnBoatBtn.addEventListener('click', () => {
+      const isActive = spawnBoatBtn.classList.contains('active');
+      setActive(null); // Clear material selection
+
+      if (!isActive) {
+        spawnBoatBtn.classList.add('active');
+        document.body.classList.add('boat-mode');
+        if (canvasOverlay) {
+          canvasOverlay.classList.add('active');
+          canvasOverlay.querySelector('.overlay-text').textContent = 'Click anywhere to place a boat!';
+        }
+        if (onToggleBoatMode) onToggleBoatMode(true);
+        if (onToggleSpawnMode) onToggleSpawnMode(false);
+        if (onToggleBombMode) onToggleBombMode(false);
+        if (onToggleGunMode) onToggleGunMode(false);
+        if (onToggleGrenadeMode) onToggleGrenadeMode(false);
+        if (onToggleSwordMode) onToggleSwordMode(false);
+        if (onToggleCarMode) onToggleCarMode(false);
+        if (onTogglePlaneMode) onTogglePlaneMode(false);
+      } else {
+        if (onToggleBoatMode) onToggleBoatMode(false);
+        if (canvasOverlay) {
+          canvasOverlay.querySelector('.overlay-text').textContent = 'Click anywhere to spawn a person';
+        }
+      }
+    });
+  }
+
+  if (spawnPlaneBtn) {
+    spawnPlaneBtn.addEventListener('click', () => {
+      const isActive = spawnPlaneBtn.classList.contains('active');
+      setActive(null); // Clear material selection
+
+      if (!isActive) {
+        spawnPlaneBtn.classList.add('active');
+        document.body.classList.add('plane-mode');
+        if (canvasOverlay) {
+          canvasOverlay.classList.add('active');
+          canvasOverlay.querySelector('.overlay-text').textContent = 'Click anywhere to place a plane!';
+        }
+        if (onTogglePlaneMode) onTogglePlaneMode(true);
+        if (onToggleSpawnMode) onToggleSpawnMode(false);
+        if (onToggleBombMode) onToggleBombMode(false);
+        if (onToggleGunMode) onToggleGunMode(false);
+        if (onToggleGrenadeMode) onToggleGrenadeMode(false);
+        if (onToggleSwordMode) onToggleSwordMode(false);
+        if (onToggleCarMode) onToggleCarMode(false);
+        if (onToggleBoatMode) onToggleBoatMode(false);
+      } else {
+        if (onTogglePlaneMode) onTogglePlaneMode(false);
         if (canvasOverlay) {
           canvasOverlay.querySelector('.overlay-text').textContent = 'Click anywhere to spawn a person';
         }
